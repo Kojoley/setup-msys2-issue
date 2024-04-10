@@ -1,0 +1,46 @@
+# Copyright 2023 Nikita Kniazev
+#
+# Use, modification, and distribution are subject to the
+# Boost Software License, Version 1.0. (See accompanying file LICENSE.txt)
+
+name: Repro
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  msys2:
+    name: Windows msys2 ${{matrix.msys}} ${{matrix.toolset}}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        msys:
+          - mingw64
+          - mingw32
+          - ucrt64
+          - clang64
+          - clang32
+          - msys
+        toolset:
+          - clang
+          - gcc
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Install Toolset
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.msys}}
+          pacboy: python:p ${{matrix.toolset}}:p
+
+      - name: Toolset Info
+        run: ${{matrix.toolset}} -v
+
+      - name: Python Info
+        run: python -VV
